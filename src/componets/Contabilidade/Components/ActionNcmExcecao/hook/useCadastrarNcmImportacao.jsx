@@ -235,20 +235,21 @@ export const useCadastrarNcmImportacao = ({
       const workbook = XLSX.read(buffer, { type: "array" });
       const primeiraAba = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[primeiraAba];
-      const range = XLSX.utils.decode_range(worksheet["!ref"]);
-      const totalLinhas = range.e.r;
-
-      if (totalLinhas > LIMITE_LINHAS) {
-        setResultado({ erro: `Máximo permitido: ${LIMITE_LINHAS} linhas` });
-        return;
-      }
-
       const dados = XLSX.utils.sheet_to_json(worksheet, {
         defval: "",
         raw: false,
       });
 
-      validarLista(dados);
+      const dadosFiltrados = dados.filter((item) =>
+        Object.values(item).some((v) => v !== "" && v !== null && v !== undefined)
+      );
+
+      if (dadosFiltrados.length > LIMITE_LINHAS) {
+        setResultado({ erro: `Máximo permitido: ${LIMITE_LINHAS} linhas` });
+        return;
+      }
+
+      validarLista(dadosFiltrados);
 
     } catch (error) {
       console.error(error);
